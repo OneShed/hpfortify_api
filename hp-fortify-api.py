@@ -223,19 +223,5 @@ class FortifyTokenAuth(requests.auth.AuthBase):
 
 def main():
 
-    username = 'hm410'
-    passwd   = ''
-    template = 'DBG Risk Template'
-
-    project_name = 'AID026_Vestima_IFRD_UNIX'
-    version_name = 'Version1'
-    description  = 'Test application'
-
-    #api = Api(username=username, passwd=passwd, verify_ssl=False)
-    #api = Api(token='NDViNDUzMDktZTdkYi00OTk4LWJhMGEtZTY4Y2Q4Yzc2Mjlj', verify_ssl=False)
-
-    id = api.create_project_version(project_name, version_name, template, description)
-    api.populate_project_data(id)
-
 if __name__ == "__main__":
     main()
