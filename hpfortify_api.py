@@ -21,12 +21,15 @@ import getpass
 class Api(object):
 
     _sscapi = 'https://10.139.54.250/ssc/api/v1'
+    verify_ssl = False
+
+    _issue_template_default = 'DBG Risk Template'
 
     _username = None
     _passwd = None
-    verify_ssl = False
+    _issue_template_id = None
 
-    def __init__(self, username=None, passwd=None, token=None, verify_ssl=False):
+    def __init__(self, username=None, passwd=None, token=None, verify_ssl=False, issue_template=None):
 
         self._username = username
         self._passwd = passwd
@@ -39,6 +42,11 @@ class Api(object):
             self.auth_type = 'token'
         else:
             self.auth_type = 'unauthenticated'
+
+        if issue_template:
+            self._issue_template_id = self._get_issue_template_id(self.issue_template)
+        else:
+            self._issue_template_id = self._get_issue_template_id(self._issue_template_default)
 
     def _request(self, method, url=None, params=None, headers=None, data=''):
 
@@ -65,7 +73,7 @@ class Api(object):
                         data=payload, verify=self.verify_ssl)
 
                 # raise an HTTPError if the HTTP request returned an unsuccessful
-            print(req.text)
+            #print(req.text)
             req.raise_for_status()
 
             response_code = req.status_code
@@ -83,7 +91,7 @@ class Api(object):
         except requests.exceptions.RequestException as e:
             print("Error processing the response {}".format(e.message))
 
-    # Return array of active SSC projects in format 'project - version'
+    # Return pretty list of active SSC projects in the format 'project - version'
     def get_project_versions(self, substr=None, sort=False):  # {{{
 
         projects = list()
@@ -109,28 +117,60 @@ class Api(object):
             return self.uniq(projects)
     # }}}
 
-    def project_version_exists(self, project, version):
-        print('todo')
+    # Return a dict of all SSC jobs
+    def _get_jobs(self):
 
-    # Return the token ID
+        projects = list()
+        url=self._sscapi + '/projectVersions?start=-1&limit=-1'
+
+        req = self._request(method='GET', url=url )
+
+        data = req['data']
+        return data
+
+    def _get_version_id(self, project_name):
+        jobs=self._get_jobs()
+        for job in jobs:
+            if project_name in job['project']['name']:
+                return job['project']['id']
+
+    # Return True if the pair project - version exists, False otherwise
+    def project_version_exists(self, project, version=None):
+
+        project_versions = self.get_project_versions()
+
+        if version:
+            if "{} - {}".format(project, version) in project_versions:
+                return True
+            else:
+                return False
+        else:
+            if any([s.startswith(project) for s in project_versions]):
+                return True
+            else:
+                return False
+
+    # Return the token ID (auth by user/password needed)
+    # default ttl is one day, change via option might not be supported by SSC
     def get_token(self, token_type=None, ttl=None):
 
         url = os.path.join(self._sscapi, 'auth/token?' )
 
         if token_type is not None:
             url = url + 'token=' + str(token_type) + '&'
-            if ttl is not None:
-                url = url + 'ttl=' + str(ttl)
+        if ttl is not None:
+            url = url + 'ttl=' + str(ttl)
 
         req = self._request(method='GET', url=url)
+
         try:
             token = req['data']['token']
             return token
         except KeyError:
             print('No token found')
 
-    # Return ID of template (given by name)
-    def get_issue_template_id(self, project_template_name=None):
+    # Return the ID of a template given by the name
+    def _get_issue_template_id(self, project_template_name=None):
         """
         get the template id of a given template name
         e.g. 'DBG Risk Template' -> XXX-XXX-XXX-XXX
@@ -143,10 +183,11 @@ class Api(object):
         issue_template = self._request(method='GET', url=url)
         issue_template_id = issue_template['data'][0]['_href']
         id = issue_template_id.rsplit('/', 1)[1]
+
         return id
 
-    # Return the JSON payload for project creation
-    def _version_payload(self, project_name, version_name, description, issue_template_id):
+    # Return the JSON payload to be used for the project creation
+    def _version_payload(self, project_name, version_name, description):
 
         json_application_version = dict(
                 name='',			# Release
@@ -162,47 +203,70 @@ class Api(object):
                 )
 
         json_application_version['name'] = version_name
-        #json_application_version['project']['id'] =
         json_application_version['description'] = description
         json_application_version['project']['name'] = project_name
         json_application_version['project']['description'] = description
-        json_application_version['project']['issueTemplateId'] = issue_template_id
-        json_application_version['issueTemplateId'] = issue_template_id
+        json_application_version['project']['issueTemplateId'] = self._issue_template_id
+        json_application_version['issueTemplateId'] = self._issue_template_id
 
         return json.dumps(json_application_version)
 
-   # Create project
-    def create_project_version(self, project_name, version_name, issue_template_name, description):
+    # Create (add) new vesion to already existing project
+    def add_version(self, project_name, version_name, description):
 
-        template_id = self.get_issue_template_id(project_template_name=issue_template_name)
+        project_id = self._get_version_id(project_name)
+
+        url = self._sscapi + "/projects/{}/versions".format(project_id)
+
+        payload = dict(
+             name=version_name,
+             description=description,
+             issueTemplateId=self._issue_template_id,
+             active=True,
+             committed=True
+             #owner=owner,
+             #masterAttrGuid=masteratrrguid,
+         )
+
+        payload = json.dumps(payload)
+
+        ret = self._request( method='POST', url=url, data=payload)
+        version_id =  ret['data']['id']
+
+        self._configure_project_version(version_id)
+
+   # Create the project - version pair
+    def create_project_version(self, project_name, version_name, description):
+
         url = self._sscapi + '/projectVersions'
 
         payload = self._version_payload(
                 project_name = project_name,
                 version_name = version_name,
-                issue_template_id = template_id,
                 description = description
                 )
 
         ret = self._request( method='POST', url=url, data=payload)
-        return ret['data']['id']
+        version_id = ret['data']['id']
 
-    # Configure the project
-    def populate_project_data(self, project_id):
+        self._configure_project_version(version_id)
+
+    # Configure the project (created by the method create_project_version() )
+    def _configure_project_version(self, project_id):
 
         project_id = str(project_id)
         url = self._sscapi + '/bulk'
 
-        # serialize json read from file
+        # serialize the json which was read from file
         data_file = os.path.join(os.getcwd(), 'data/payload')
         json_template=open(data_file).read()
         json_str = json_template.replace('{{api}}', self._sscapi)
         json_str = json_str.replace('{{project_id}}', project_id)
+
         str_json = json.loads( json_str )
         payload=json.dumps(str_json)
 
         ret = self._request( method='POST', url=url, data=payload)
-        print('Project {} populated'.format(project_id))
 
     def json_pprint(self, dict=dict):
         jsond = json.dumps(dict, indent=4, sort_keys=False)
@@ -220,8 +284,3 @@ class FortifyTokenAuth(requests.auth.AuthBase):
     def __call__(self, r):
         r.headers['Authorization'] = 'FortifyToken ' + self.token
         return r
-
-def main():
-
-if __name__ == "__main__":
-    main()

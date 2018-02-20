@@ -1,20 +1,43 @@
-# hp-fortify-api
-Wrapper for the SSC API of vrsion 1.0
+# hpfortify_api
+Wrapper for the SSC API of vrsion 1.0</br>
+https://hpfortify.dwain.infra/ssc/html/docs/docs.html#/overview/
 
-## Create the instance:
-api = Api(username=username, passwd=passwd, verify_ssl=False)
+## Example
 
-## Receive API token:
-token = api.get_token()
+### Create the instance:
+```
+import hpfortify_api
 
-## Obtain all SSC porjects of Vestima:
-vestima_projects = api.get_projects(substr='Vestima', sort=True)
+username=xxx
+passwd=xxx
 
-## Create project-version:
-id = api.create_project_version(project_name, version_name, template, description)
+api = hpfortify_api.Api(username=username, passwd=password, verify_ssl=False)
+```
 
-## Setup the project-version:
-api.populate_project_data(id)
+### Receive API token to use instead of user/pass (optional):
+```
+token = api.get_token(ttl=90)
+```
 
-## Check if project exists:
-exists = api.project_version_exists()
+### Obtain all SSC projects (containing name AID001)
+```
+project='AID001XXX'
+
+projects = api.get_project_versions(substr=project, sort=True)
+```
+
+### Create new version of the project.</br>If the project is not found, create it too.
+```
+version='DEV123'
+description='Version description'
+
+if api.project_version_exists(project, version=version):
+        print( "Project {} in version {} already exists".format(project, version))
+
+elif api.project_version_exists(project):
+        print( "Project {} has no version {}, creating it".format(project, version))
+        api.add_version(project, version, 'description123')
+else:
+        print( "Project {} in version {} will be created".format(project, version))
+        api.create_project_version(project, version, description)
+```
