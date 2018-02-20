@@ -1,0 +1,131 @@
+{
+  "requests": [
+    {
+      "uri":
+"{{api}}/projectVersions/{{project_id}}/attributes",
+      "httpVerb": "PUT",
+      "postData": [
+        {
+          "attributeDefinitionId": 5,
+          "values": [
+            {
+              "guid": "New"
+            }
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 6,
+          "values": [
+            {
+              "guid": "Internal"
+            }
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 7,
+          "values": [
+            {
+              "guid": "internalnetwork"
+            }
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 10,
+          "values": [
+
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 11,
+          "values": [
+
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 12,
+          "values": [
+
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 1,
+          "values": [
+            {
+              "guid": "High"
+            }
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 2,
+          "values": [
+
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 3,
+          "values": [
+
+          ],
+          "value": null
+        },
+        {
+          "attributeDefinitionId": 4,
+          "values": [
+
+          ],
+          "value": null
+        }
+      ]
+    },
+    {
+      "uri": "{{api}}/projectVersions/{{project_id}}/responsibilities",
+      "httpVerb": "PUT",
+      "postData": [
+        {
+          "responsibilityGuid": "projectmanager",
+          "userId": null
+        },
+        {
+          "responsibilityGuid": "securitychampion",
+          "userId": null
+        },
+        {
+          "responsibilityGuid": "developmentmanager",
+          "userId": null
+        }
+      ]
+    },
+    {
+      "uri": "{{api}}/projectVersions/{{project_id}}/action",
+      "httpVerb": "POST",
+      "postData": [
+        {
+          "type": "COPY_FROM_PARTIAL",
+          "values": {
+            "projectVersionId": {{project_id}},
+            "previousProjectVersionId": -1,
+            "copyAnalysisProcessingRules": true,
+            "copyBugTrackerConfiguration": true,
+            "copyCurrentStateFpr": false,
+            "copyCustomTags": true
+          }
+        }
+      ]
+    },
+    {
+      "uri": "{{api}}/projectVersions/{{project_id}}?hideProgress=true",
+      "httpVerb": "PUT",
+      "postData": {
+        "committed": true
+      }
+    }
+  ]
+}
