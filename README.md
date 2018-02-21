@@ -29,7 +29,7 @@ projects = api.get_project_versions(substr=project, sort=True)
 ### Create new version of the project.</br>If the project is not found, create it too.
 ```
 version='DEV123'
-description='Version description'
+description='Some description'
 
 if api.project_version_exists(project, version=version):
         print( "Project {} in version {} already exists".format(project, version))

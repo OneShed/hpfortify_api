@@ -89,10 +89,10 @@ class Api(object):
             except ValueError:  # Return data is not JSON => return raw
                 return req.content
             except:
-                print('Cannot parse JSON response')
+                sys.exit('Cannot parse JSON response')
 
         except requests.exceptions.RequestException as e:
-            print("Error processing the response {}".format(e.message))
+            sys.exit("Error processing the response {}".format(e.message))
 
     # Return pretty list of active SSC projects in the format 'project - version'
     def get_project_versions(self, substr=None, sort=False):  # {{{
@@ -260,7 +260,7 @@ class Api(object):
         project_id = str(project_id)
         url = self._sscapi + '/bulk'
 
-        # serialize the json which was read from file
+        # serialize the json which was read from file, TODO: move it to here
         data_file = os.path.join(os.getcwd(), 'data/payload')
         json_template=open(data_file).read()
         json_str = json_template.replace('{{api}}', self._sscapi)
