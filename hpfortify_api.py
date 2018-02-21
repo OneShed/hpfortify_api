@@ -18,6 +18,9 @@ import pprint
 import traceback
 import getpass
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 class Api(object):
 
     _sscapi = 'https://10.139.54.250/ssc/api/v1'
