@@ -31,13 +31,15 @@ class Api(object):
     _username = None
     _passwd = None
     _issue_template_id = None
+    _datadir = None
 
-    def __init__(self, username=None, passwd=None, token=None, verify_ssl=False, issue_template=None):
+    def __init__(self, username=None, passwd=None, token=None, verify_ssl=False, issue_template=None, datadir=None):
 
         self._username = username
         self._passwd = passwd
         self.verify_ssl = verify_ssl
         self.token = token
+        self._datadir = datadir
 
         if username is not None:
             self.auth_type = 'basic'
@@ -237,6 +239,7 @@ class Api(object):
         version_id =  ret['data']['id']
 
         self._configure_project_version(version_id)
+        print( "Added version {} to exsting project {}".format(version_name, project_name))
 
    # Create the project - version pair
     def create_project_version(self, project_name, version_name, description):
@@ -253,6 +256,7 @@ class Api(object):
         version_id = ret['data']['id']
 
         self._configure_project_version(version_id)
+        print( "Created project {} in version {}".format(project_name, version_name))
 
     # Configure the project (created by the method create_project_version() )
     def _configure_project_version(self, project_id):
@@ -261,7 +265,8 @@ class Api(object):
         url = self._sscapi + '/bulk'
 
         # serialize the json which was read from file, TODO: move it to here
-        data_file = os.path.join(os.getcwd(), 'data/payload')
+
+        data_file = os.path.join(self._datadir, 'version_config.json')
         json_template=open(data_file).read()
         json_str = json_template.replace('{{api}}', self._sscapi)
         json_str = json_str.replace('{{project_id}}', project_id)

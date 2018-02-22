@@ -11,7 +11,10 @@ import hpfortify_api
 username=xxx
 passwd=xxx
 
-api = hpfortify_api.Api(username=username, passwd=password, verify_ssl=False)
+# json templates stored here
+datadir='/local/git/hpfortify_api/data'
+
+api = hpfortify_api.Api(username=username, passwd=password, verify_ssl=False, datadir=datadir)
 ```
 
 ### Receive API token to use instead of user/pass (optional):
@@ -35,9 +38,11 @@ if api.project_version_exists(project, version=version):
         print( "Project {} in version {} already exists".format(project, version))
 
 elif api.project_version_exists(project):
-        print( "Project {} has no version {}, creating it".format(project, version))
+	# Add new version to the project
         api.add_version(project, version, 'description123')
+
 else:
+	# Create new project on a given version
         print( "Project {} in version {} will be created".format(project, version))
         api.create_project_version(project, version, description)
 ```
