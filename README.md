@@ -1,5 +1,5 @@
 # hpfortify_api
-Wrapper for the SSC API of vrsion 1.0</br>
+Wrapper for the SSC API of version 1.0</br>
 https://hpfortify.dwain.infra/ssc/html/docs/docs.html#/overview/
 
 ## Example
@@ -45,4 +45,9 @@ else:
 	# Create new project on a given version
         print( "Project {} in version {} will be created".format(project, version))
         api.create_project_version(project, version, description)
+
+```
+### Get the findings on a scanned version:
+```
+findings_json = api.get_findings(project)
 ```

@@ -78,7 +78,6 @@ class Api(object):
                         data=payload, verify=self.verify_ssl)
 
                 # raise an HTTPError if the HTTP request returned an unsuccessful
-            #print(req.text)
             req.raise_for_status()
 
             response_code = req.status_code
@@ -138,6 +137,42 @@ class Api(object):
         for job in jobs:
             if project_name in job['project']['name']:
                 return job['project']['id']
+
+    # Return json of findings on all versions of a project
+    def get_findings(self, project_name):
+        jobs=self._get_jobs()
+        ids=list()
+        severities={"Low":0, "High":0, "Medium":0, "Critical":0}
+
+        out=dict(    # project
+            dict()   # { version: (severities) }
+        )
+        ver=dict()
+
+        for job in jobs:
+            if project_name == job['project']['name']:
+                version_name=job['name']
+                id = job['currentState']['id']
+                url=self._sscapi + "/projectVersions/{}/issues/?start=-1&limit=-1".format(id)
+                issues=self._request(method='GET', url=url)
+
+                for data in issues['data']:
+                    if( data['friority'] == 'Low'):
+                        severities["Low"]+=1
+                    if( data['friority'] == 'High'):
+                        severities["High"]+=1
+                    if( data['friority'] == 'Medium'):
+                        severities["Medium"]+=1
+                    if( data['friority'] == 'Critical'):
+                        severities["Critical"]+=1
+
+                ver[version_name]=severities
+                severities={"Low":0, "High":0, "Medium":0, "Critical":0}
+
+            out[project_name] = ver
+
+        self.json_pprint(out)
+        return(out)
 
     # Return True if the pair project - version exists, False otherwise
     def project_version_exists(self, project, version=None):
