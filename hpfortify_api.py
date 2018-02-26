@@ -172,7 +172,7 @@ class Api(object):
                 if date != None:
                     severities["date"] = date.split('.')[0]
                 else:
-                    severities["date"] = 'ongoing'
+                    severities["date"] = 'no scan'
 
                 ver[version_name]=severities
                 severities={"Low":0, "High":0, "Medium":0, "Critical":0}
