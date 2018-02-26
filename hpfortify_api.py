@@ -168,7 +168,10 @@ class Api(object):
 
                 # add the date
                 date = job['currentState']['lastFprUploadDate']
-                severities["date"] = date.split('.')[0]
+                if date != None:
+                    severities["date"] = date.split('.')[0]
+                else:
+                    severities["date"] = 'ongoing'
 
                 ver[version_name]=severities
                 severities={"Low":0, "High":0, "Medium":0, "Critical":0}
