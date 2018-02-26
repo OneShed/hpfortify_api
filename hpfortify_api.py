@@ -168,6 +168,7 @@ class Api(object):
 
                 # add the date
                 date = job['currentState']['lastFprUploadDate']
+
                 if date != None:
                     severities["date"] = date.split('.')[0]
                 else:
@@ -280,7 +281,7 @@ class Api(object):
         version_id =  ret['data']['id']
 
         self._configure_project_version(version_id)
-        print( "Added version {} to exsting project {}".format(version_name, project_name))
+        print( "Added version {} to existing project {}".format(version_name, project_name))
 
    # Create the project - version pair
     def create_project_version(self, project_name, version_name, description):
