@@ -166,12 +166,15 @@ class Api(object):
                     if( data['friority'] == 'Critical'):
                         severities["Critical"]+=1
 
+                # add the date
+                date = job['currentState']['lastFprUploadDate']
+                severities["date"] = date.split('.')[0]
+
                 ver[version_name]=severities
                 severities={"Low":0, "High":0, "Medium":0, "Critical":0}
 
             out[project_name] = ver
 
-        self.json_pprint(out)
         return(out)
 
     # Return True if the pair project - version exists, False otherwise
@@ -274,7 +277,7 @@ class Api(object):
         version_id =  ret['data']['id']
 
         self._configure_project_version(version_id)
-        print( "Added version {} to exsting project {}".format(version_name, project_name))
+        print( "Added version {} to existing project {}".format(version_name, project_name))
 
    # Create the project - version pair
     def create_project_version(self, project_name, version_name, description):

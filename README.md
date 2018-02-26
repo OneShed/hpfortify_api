@@ -47,7 +47,28 @@ else:
         api.create_project_version(project, version, description)
 
 ```
-### Get the findings on a scanned version:
+### Get the findings on all versions of the project
 ```
 findings_json = api.get_findings(project)
+api.json_pprint(findings_json)
+
+{
+    "AID026_Vestima_IFRD_UNIX": {
+        "DEV": {
+            "Low": 438,
+            "Medium": 0,
+            "Critical": 1,
+            "High": 444,
+	    "date": "2018-02-19T20:30:42"
+        },
+        "Release": {
+            "Low": 438,
+            "Medium": 0,
+            "Critical": 1,
+            "High": 444,
+	    "date": "2018-02-19T20:45:34"
+        }
+    }
+}
+
 ```
