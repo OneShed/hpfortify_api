@@ -23,7 +23,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Api(object):
 
-    _sscapi = 'https://10.139.54.250/ssc/api/v1'
+    _sscapi = 'https://hpfortify.dwain.infra/ssc/api/v1'
     verify_ssl = False
 
     _issue_template_default = 'DBG Risk Template'
