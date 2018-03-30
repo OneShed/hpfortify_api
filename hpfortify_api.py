@@ -132,10 +132,10 @@ class Api(object):
         data = req['data']
         return data
 
-    def _get_version_id(self, project_name):
+    def _get_version_id(self, version_name):
         jobs=self._get_jobs()
         for job in jobs:
-            if project_name in job['project']['name']:
+            if version_name in job['project']['name']:
                 return job['project']['id']
 
     # Return json of findings on all versions of a project
@@ -281,7 +281,7 @@ class Api(object):
         version_id =  ret['data']['id']
 
         self._configure_project_version(version_id)
-        print( "Added version {} to existing project {}".format(version_name, project_name))
+        print( "Added version {} to existing project {} ({})".format(version_name, project_name, version_id))
 
    # Create the project - version pair
     def create_project_version(self, project_name, version_name, description):
@@ -298,7 +298,7 @@ class Api(object):
         version_id = ret['data']['id']
 
         self._configure_project_version(version_id)
-        print( "Created project {} in version {}".format(project_name, version_name))
+        print( "Created project {} in version {} ({})".format(project_name, version_name, version_id))
 
     # Configure the project (created by the method create_project_version() )
     def _configure_project_version(self, project_id):
@@ -317,6 +317,13 @@ class Api(object):
         payload=json.dumps(str_json)
 
         ret = self._request( method='POST', url=url, data=payload)
+
+    def delete_project_version(self, project_id):
+
+        url = self._sscapi + '/projectVersions/' + project_id
+
+        ret = self._request( method='DELETE', url=url)
+        print( "Deleted project %s".format(project_id))
 
     def json_pprint(self, dict=dict):
         jsond = json.dumps(dict, indent=4, sort_keys=False)

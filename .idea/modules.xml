@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/hpfortify_api.iml" filepath="$PROJECT_DIR$/.idea/hpfortify_api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ifs_hpf_issues/.idea/ifs_hpf_issues.iml" filepath="$PROJECT_DIR$/../ifs_hpf_issues/.idea/ifs_hpf_issues.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../learning/.idea/learning.iml" filepath="$PROJECT_DIR$/../learning/.idea/learning.iml" />
+    </modules>
+  </component>
+</project>

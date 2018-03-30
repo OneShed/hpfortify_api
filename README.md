@@ -72,3 +72,14 @@ api.json_pprint(findings_json)
 }
 
 ```
+
+## Limitations
+1./With the curent API, I am not able to assign the LDAP group to the new project version</br>
+This means it is only readable by the account which had created it.</br>
+Although limitation for our CI, we can always export a PDF report to the user as a workaround.
+
+2./Removing of a projects works, sadly not of a version.
+
+
+
+
