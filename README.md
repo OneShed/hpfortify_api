@@ -80,6 +80,5 @@ Although limitation for our CI, we can always export a PDF report to the user as
 
 2./Removing of a projects works, sadly not of a version.
 
-
-
-
+## Wiki (IFS related)
+https://github.deutsche-boerse.de/dev/hpfortify_api/wiki
