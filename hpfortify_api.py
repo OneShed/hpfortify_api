@@ -24,7 +24,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class Api(object):
 
     _sscapi = 'http://hpfortify.dwain.infra/ssc/api/v1'
-    #_sscapi = 'http://10.139.54.250/ssc/api/v1'
+#    _sscapi = 'https://10.139.54.250/ssc/api/v1'
     verify_ssl = False
 
     _issue_template_default = 'DBG Risk Template'
@@ -133,11 +133,35 @@ class Api(object):
         data = req['data']
         return data
 
-    def _get_version_id(self, version_name):
+    # Get version id of a project
+    def _get_project_id(self, version_name):
         jobs=self._get_jobs()
         for job in jobs:
             if version_name in job['project']['name']:
                 return job['project']['id']
+
+    # Return array of version(s) of a project
+    def _get_project_version_id(self, project, version):
+        jobs=self._get_jobs()
+        project_id=None
+
+        for job in jobs:
+            if project in job['project']['name']:
+                project_id=job['project']['id']
+                break
+
+        if project_id==None:
+                raise Exception("Project {} not found".format(project))
+
+        url = self._sscapi + "/projects/{}/versions".format(project_id)
+        req = self._request(method='GET', url=url )
+        data = req['data']
+
+        for ver in data:
+            if ver['name']==version:
+                return ver['id']
+
+        sys.exit("No version {} of project {} found".format(version, project))
 
     # Return json of findings on all versions of a project
     def get_findings(self, project_name):
@@ -262,7 +286,7 @@ class Api(object):
     # Create (add) new vesion to already existing project
     def add_version(self, project_name, version_name, description):
 
-        project_id = self._get_version_id(project_name)
+        project_id = self._get_project_id(project_name)
 
         url = self._sscapi + "/projects/{}/versions".format(project_id)
 
@@ -319,12 +343,14 @@ class Api(object):
 
         ret = self._request( method='POST', url=url, data=payload)
 
-    def delete_project_version(self, project_id):
+    def delete_project_version(self, project, version):
 
-        url = self._sscapi + '/projectVersions/' + project_id
+        project_id = self._get_project_version_id(project, version)
+
+        url = self._sscapi + '/projectVersions/' + str(project_id)
 
         ret = self._request( method='DELETE', url=url)
-        print( "Deleted project %s".format(project_id))
+        print( "Version of id {} deleted".format(project_id))
 
     def json_pprint(self, dict=dict):
         jsond = json.dumps(dict, indent=4, sort_keys=False)

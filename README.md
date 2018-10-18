@@ -45,8 +45,16 @@ else:
 	# Create new project on a given version
         print( "Project {} in version {} will be created".format(project, version))
         api.create_project_version(project, version, description)
-
 ```
+
+### Delete version of a project.
+```
+if( api.project_version_exists(project, version)):
+	api.delete_project_version(project, version)
+else:
+	print("Project {} of version {} does not exist".format(project,version))
+```
+
 ### Get the findings on all versions of the project
 ```
 findings_json = api.get_findings(project)
@@ -77,8 +85,6 @@ api.json_pprint(findings_json)
 1./With the curent API, I am not able to assign the LDAP group to the new project version</br>
 This means it is only readable by the account which had created it.</br>
 Although limitation for our CI, we can always export a PDF report to the user as a workaround.
-
-2./Removing of a projects works, sadly not of a version.
 
 ## Wiki (IFS related)
 https://github.deutsche-boerse.de/dev/hpfortify_api/wiki
