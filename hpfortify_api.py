@@ -23,7 +23,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Api(object):
 
-#    _sscapi = 'http://hpfortify.dwain.infra/ssc/api/v1'
+#    _sscapi = 'https://hpfortify.dwain.infra/ssc/api/v1'
     _sscapi = 'https://10.139.54.250/ssc/api/v1'
     verify_ssl = False
 
@@ -145,6 +145,7 @@ class Api(object):
         jobs=self._get_jobs()
         project_id=None
 
+        
         for job in jobs:
             if project in job['project']['name']:
                 project_id=job['project']['id']
@@ -163,11 +164,11 @@ class Api(object):
 
         sys.exit("No version {} of project {} found".format(version, project))
 
-    # Return json of findings on all versions of a project
+    # Loop all issues and return json of findings on all versions of a project
     def get_findings(self, project_name):
         jobs=self._get_jobs()
         ids=list()
-        severities={"Low":0, "High":0, "Medium":0, "Critical":0}
+        severities={"Low":0, "Low_a":0, "High":0, "High_a": 0, "Medium":0, "Medium_a":0, "Critical":0, "Critical_a":0}
 
         out=dict(    # project
             dict()   # { version: (severities) }
@@ -182,6 +183,7 @@ class Api(object):
                 issues=self._request(method='GET', url=url)
 
                 for data in issues['data']:
+                    issue_id = data['id']
                     if( data['friority'] == 'Low'):
                         severities["Low"]+=1
                     if( data['friority'] == 'High'):
@@ -190,6 +192,10 @@ class Api(object):
                         severities["Medium"]+=1
                     if( data['friority'] == 'Critical'):
                         severities["Critical"]+=1
+
+                        tag=self.get_issue_tag(issue_id)
+                        if tag != None:
+                            severities['Critical_a']+=1
 
                 # add the date
                 date = job['currentState']['lastFprUploadDate']
@@ -200,11 +206,20 @@ class Api(object):
                     severities["date"] = 'no scan'
 
                 ver[version_name]=severities
-                severities={"Low":0, "High":0, "Medium":0, "Critical":0}
+                severities={"Low":0, "Low_a":0, "High":0, "High_a": 0, "Medium":0, "Medium_a":0, "Critical":0, "Critical_a":0}
 
             out[project_name] = ver
 
         return(out)
+
+    # Return the audit string e.g. "not an issue", null if no audit done 
+    def get_issue_tag(self, issue_id):
+
+        url=self._sscapi + "/issueDetails/{}".format(issue_id)
+        issues=self._request(method='GET', url=url)
+
+        return issues['data']['primaryTag']['tagValue']
+
 
     # Return True if the pair project - version exists, False otherwise
     def project_version_exists(self, project, version=None):

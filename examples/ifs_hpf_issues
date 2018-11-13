@@ -4,11 +4,11 @@
 
 =head1 NAME
 
-cycle_comp.pl
+ifs_hpf_issues - render a nice statisstics page
 
 =head1 SYNOPSIS
 
-merge_issues_cgi.pl?opt=value
+ifs_hpf_issues?opt=value
 
 =over
 
@@ -53,6 +53,7 @@ use Time::localtime;
 
 # Parse this file to get web output
 use constant SOURCE => '/usr/local/share/ifs_hpf_issues/ifs_hpf_issues.json';
+use constant JENKINS_JOBS => '/usr/local/share/tmp/jenkins_jobs';
 
 my $last_update;
 
@@ -136,8 +137,8 @@ See
 <a href="?csv=1" align="right">Download as CSV file</a> 
 </div>
 
-Figures last updated: $last_update
-</p>
+Figures last updated: $last_update, <font color='green'>green</font> marked are the 'DevOps' jobs created and present in <a href="http://vmcdelifsdev:8800" align="right">http://vmcdelifsdev:8800/.
+</a> Don't delete those!  </p>
 <hr>
 EOF
 
@@ -202,6 +203,18 @@ sub render_csv { # {{{
 
 } # }}}
 
+sub in_jenkins {
+	my( $ver ) = @_;
+    	my $jenkins_jobs = read_file(JENKINS_JOBS);
+
+	my @jobs = split('\n', $jenkins_jobs);
+	foreach my $job (@jobs) {
+		if( $job =~ /^$ver$/) {
+			return 1
+		}
+	}
+} 
+
 sub add_tables {
     my( %issues ) = @_;
     my $msg;
@@ -211,13 +224,18 @@ sub add_tables {
         for my $vers ( sort \%{$issues{$proj}}) {
 	    foreach my $ver ( sort keys %{$vers} ) {
 	    my $issue_content = "
-		$issues{$proj}{$ver}{'Critical'},
+		$issues{$proj}{$ver}{'Critical_a'}/$issues{$proj}{$ver}{'Critical'},
 		$issues{$proj}{$ver}{'High'},
 		$issues{$proj}{$ver}{'Medium'},
 		$issues{$proj}{$ver}{'Low'}
 		";
             my $scan_date = $issues{$proj}{$ver}{'date'};
-            $issue .="<tr><td>$ver</td><td>$issue_content</td><td>$scan_date</td></tr>\n";
+	    if( !in_jenkins($ver) ) {
+            	$issue .="<tr><td>$ver</td><td>$issue_content</td><td>$scan_date</td></tr>\n";
+		}
+	    else {
+            	$issue .="<tr><td><font color='green'>$ver</font></td><td>$issue_content</td><td>$scan_date</td></tr>\n";
+		}
 	    }
         }
 
@@ -233,7 +251,7 @@ MESSAGE
 </thead>
 <thead>
     <th>Version</th>
-    <th>Critical, High, Medium, Low</th>
+    <th>Critical (audited/total), High, Medium, Low </th>
     <th>Scan time</th>
 </thead>
 MESSAGE
