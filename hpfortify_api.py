@@ -164,8 +164,8 @@ class Api(object):
 
         sys.exit("No version {} of project {} found".format(version, project))
 
-    # Loop all issues and return json of findings on all versions of a project
-    def get_findings(self, project_name):
+    # Loop all issues and return json of findings of the project-version 
+    def get_findings(self, project_name, project_version=None):
         jobs=self._get_jobs()
         ids=list()
         severities={"Low":0, "Low_a":0, "High":0, "High_a": 0, "Medium":0, "Medium_a":0, "Critical":0, "Critical_a":0}
@@ -178,35 +178,46 @@ class Api(object):
         for job in jobs:
             if project_name == job['project']['name']:
                 version_name=job['name']
-                id = job['currentState']['id']
-                url=self._sscapi + "/projectVersions/{}/issues/?start=-1&limit=-1".format(id)
-                issues=self._request(method='GET', url=url)
 
-                for data in issues['data']:
-                    issue_id = data['id']
-                    if( data['friority'] == 'Low'):
-                        severities["Low"]+=1
-                    if( data['friority'] == 'High'):
-                        severities["High"]+=1
-                    if( data['friority'] == 'Medium'):
-                        severities["Medium"]+=1
-                    if( data['friority'] == 'Critical'):
-                        severities["Critical"]+=1
+                if project_version == None or project_version == version_name:
 
-                        tag=self.get_issue_tag(issue_id)
-                        if tag != None:
-                            severities['Critical_a']+=1
+                   id = job['currentState']['id']
+                   url=self._sscapi + "/projectVersions/{}/issues/?start=-1&limit=-1".format(id)
+                   issues=self._request(method='GET', url=url)
 
-                # add the date
-                date = job['currentState']['lastFprUploadDate']
+                   for data in issues['data']:
+                       issue_id = data['id']
 
-                if date != None:
-                    severities["date"] = date.split('.')[0]
-                else:
-                    severities["date"] = 'no scan'
+                       if( data['friority'] == 'Low'):
+                           severities["Low"]+=1
+                           # ignore the audited
 
-                ver[version_name]=severities
-                severities={"Low":0, "Low_a":0, "High":0, "High_a": 0, "Medium":0, "Medium_a":0, "Critical":0, "Critical_a":0}
+                       if( data['friority'] == 'Medium'):
+                           severities["Medium"]+=1
+                           # ignore the audited
+
+                       if( data['friority'] == 'High'):
+                           severities["High"]+=1
+                           tag=self.get_issue_tag(issue_id)
+                           if tag != None:
+                               severities['High_a']+=1
+
+                       if( data['friority'] == 'Critical'):
+                           severities["Critical"]+=1
+                           tag=self.get_issue_tag(issue_id)
+                           if tag != None:
+                               severities['Critical_a']+=1
+
+                   # add the date
+                   date = job['currentState']['lastFprUploadDate']
+
+                   if date != None:
+                       severities["date"] = date.split('.')[0]
+                   else:
+                       severities["date"] = 'no scan'
+
+                   ver[version_name]=severities
+                   severities={"Low":0, "Low_a":0, "High":0, "High_a": 0, "Medium":0, "Medium_a":0, "Critical":0, "Critical_a":0}
 
             out[project_name] = ver
 

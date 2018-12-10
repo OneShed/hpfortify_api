@@ -64,16 +64,24 @@ api.json_pprint(findings_json)
     "AID026_Vestima_IFRD_UNIX": {
         "DEV": {
             "Low": 438,
+            "Low_a": 438,
             "Medium": 0,
+            "Medium_a": 0,
             "Critical": 1,
+            "Critical_a": 1,
             "High": 444,
+            "High_a": 444,
 	    "date": "2018-02-19T20:30:42"
         },
         "Release": {
             "Low": 438,
+            "Low_a": 438,
             "Medium": 0,
+            "Medium_a": 0,
             "Critical": 1,
+            "Critical_a": 1,
             "High": 444,
+            "High_a": 444,
 	    "date": "2018-02-19T20:45:34"
         }
     }
