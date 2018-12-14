@@ -198,9 +198,7 @@ class Api(object):
 
                        if( data['friority'] == 'High'):
                            severities["High"]+=1
-                           tag=self.get_issue_tag(issue_id)
-                           if tag != None:
-                               severities['High_a']+=1
+                           # ignore the audited
 
                        if( data['friority'] == 'Critical'):
                            severities["Critical"]+=1
