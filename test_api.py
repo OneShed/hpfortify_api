@@ -4,11 +4,20 @@ import os
 
 class TestApi(TestCase):
 
-    username = ''
+    username = 'hm410'
     passwd = ''
 
-    #datadir = os.path.join(os.getcwd(), 'data')
-    #api = hpfortify_api.Api(username=username, passwd=passwd, verify_ssl=False, datadir=datadir)
+    project = 'foobar'
+    version = 'foo214'
+
+    datadir = os.path.join(os.getcwd(), 'data')
+    api = hpfortify_api.Api(username=username, passwd=passwd, verify_ssl=False, datadir=datadir)
+    #api.add_version(project, version, 'description')
+    #api.create_project_version(project, version, 'description')
+
+    def test_get_entity_id(self):
+        id = self.api._get_entity_id('ifs_restapi')
+        self.assertEqual(123, id)
 
     def test_create_version(self):
         pass
@@ -32,3 +41,4 @@ class TestApi(TestCase):
     def test_delete_project(self, ):
         pass
         #self.api.delete_project_version()
+

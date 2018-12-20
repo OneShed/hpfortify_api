@@ -89,10 +89,8 @@ api.json_pprint(findings_json)
 
 ```
 
-## Limitations
-1./With the curent API, I am not able to assign the LDAP group to the new project version</br>
-This means it is only readable by the account which had created it.</br>
-Although limitation for our CI, we can always export a PDF report to the user as a workaround.
+## Limitations and TODO
+Add method delete_version()
 
 ## Wiki (IFS related)
 https://github.deutsche-boerse.de/dev/hpfortify_api/wiki

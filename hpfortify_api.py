@@ -133,19 +133,35 @@ class Api(object):
         data = req['data']
         return data
 
-    # Get version id of a project
+    # Get project id of a project
     def _get_project_id(self, version_name):
         jobs=self._get_jobs()
         for job in jobs:
             if version_name in job['project']['name']:
                 return job['project']['id']
 
-    # Return array of version(s) of a project
+    # Return authEntities json
+    def _get_entities(self):
+        entities = list()
+        url=self._sscapi + '/authEntities?start=-1&limit=-1'
+
+        req = self._request(method='GET', url=url )
+
+        data = req['data']
+        return data
+
+    # Return id of and entity
+    def _get_auth_entity_id(self, entity):
+        entities=self._get_entities()
+        for ent in entities:
+            if entity in ent['entityName'] :
+                return ent['id']
+
+    # Return id of a project-version
     def _get_project_version_id(self, project, version):
         jobs=self._get_jobs()
         project_id=None
 
-        
         for job in jobs:
             if project in job['project']['name']:
                 project_id=job['project']['id']
@@ -164,7 +180,7 @@ class Api(object):
 
         sys.exit("No version {} of project {} found".format(version, project))
 
-    # Loop all issues and return json of findings of the project-version 
+    # Loop all issues and return json of findings of the project-version
     def get_findings(self, project_name, project_version=None):
         jobs=self._get_jobs()
         ids=list()
@@ -221,7 +237,7 @@ class Api(object):
 
         return(out)
 
-    # Return the audit string e.g. "not an issue", null if no audit done 
+    # Return the audit string e.g. "not an issue", null if no audit done
     def get_issue_tag(self, issue_id):
 
         url=self._sscapi + "/issueDetails/{}".format(issue_id)
@@ -332,6 +348,14 @@ class Api(object):
         self._configure_project_version(version_id)
         print( "Added version {} to existing project {} ({})".format(version_name, project_name, version_id))
 
+        self._assign_auth_entities(project_name,version_name)
+
+    def _assign_auth_entities(self, project, version):
+        self._assign_auth_entity(project, version, 'FORTIFY_IFS (R)', 'Group', True  )
+        self._assign_auth_entity(project, version, 'FORTIFY_IFS (W)', 'Group', True  )
+        self._assign_auth_entity(project, version, 'FORTIFY_IFS (S)', 'Group', True  )
+        self._assign_auth_entity(project, version, 'defaultapplowner', 'User', False  )
+
    # Create the project - version pair
     def create_project_version(self, project_name, version_name, description):
 
@@ -348,6 +372,9 @@ class Api(object):
 
         self._configure_project_version(version_id)
         print( "Created project {} in version {} ({})".format(project_name, version_name, version_id))
+
+        # assign users and LDAP groups
+        self._assign_auth_entities(project_name, version_name)
 
     # Configure the project (created by the method create_project_version() )
     def _configure_project_version(self, project_id):
@@ -366,6 +393,37 @@ class Api(object):
         payload=json.dumps(str_json)
 
         ret = self._request( method='POST', url=url, data=payload)
+
+    # Assing users (Groups) to the version
+    def _assign_auth_entity(self, project_name, version, entity_name, type, is_ldap):
+
+        # type: Group/User
+
+        version_id = str(self._get_project_version_id(project_name, version))
+
+        auth_entity_id = self._get_auth_entity_id(entity_name)
+
+        url = self._sscapi+'/projectVersions/'+version_id+'/authEntities'
+
+        if(is_ldap):
+            entity_dn="{},OU=HP Fortify,OU=Appl Groups,OU=Accounts,DC=oa,DC=pnrad,DC=net".format(entity_name)
+        else:
+            entity_dn=""
+
+        data_file = os.path.join(self._datadir, 'auth_entities.json')
+        json_template=open(data_file).read()
+
+        json_str = json_template.replace('{{auth_entity_name}}', entity_name)
+        json_str = json_str.replace('{{auth_entity_id}}', str(auth_entity_id))
+        json_str = json_str.replace('{{is_ldap}}', str(is_ldap))
+        json_str = json_str.replace('{{auth_entity_dn}}', entity_dn)
+        json_str = json_str.replace('{{auth_entity_type}}', type)
+
+        str_json = json.loads( json_str )
+        payload=json.dumps(str_json)
+
+        ret = self._request( method='PUT', url=url, data=payload)
+        print( "Assigned auth entity {} to the version {} of project {}".format(entity_name, version, project_name))
 
     def delete_project_version(self, project, version):
 

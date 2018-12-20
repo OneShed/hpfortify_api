@@ -1,0 +1,36 @@
+[
+        {
+          "_embed": {
+            "roles": [
+              {
+                "allApplicationRole": false,
+                "assignedToNonUsers": false,
+                "builtIn": false,
+                "default": true,
+                "deletable": true,
+                "description": "desc",
+                "name": "",
+                "objectVersion": 0,
+                "permissionIds": [
+                  ""
+                ],
+                "publishVersion": 0,
+                "userOnly": false
+              }
+            ]
+          },
+          "displayName": "{{auth_entity_name}}",
+          "email": "",
+          "id":  "{{auth_entity_id}}",
+        "entityName": "{{auth_entity_name}}",
+        "firstName": "",
+        "isLdap": "{{is_ldap}}",
+        "lastName": "",
+        "ldapDn": "{{auth_entity_dn}}",
+        "type": "{{auth_entity_type}}",
+        "userPhoto": {
+          "photo": "",
+          "photoMimeType": ""
+        }
+      }
+  ]
